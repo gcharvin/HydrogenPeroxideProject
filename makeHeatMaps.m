@@ -35,6 +35,8 @@ for i = 1:length(gamma_range)
     end
 end
 
+output=permute(output,[2 1 3]);
+
 data=output;
 
 % Extract columns
@@ -60,31 +62,58 @@ numCols = ceil(sqrt(numVars)); % Number of columns in subplot grid (adjust layou
 numRows = ceil(numVars / numCols); % Number of rows in subplot grid
 
 for k = 1:numVars
-    subplot(numRows, numCols, k); % Position each heatmap in the subplot grid
-    set(gca, 'XScale', 'log', 'YScale', 'log'); % Log-log scale
-    colormap('hot'); % Use the same colormap for all plots for consistency
+    subplot(numRows, numCols, k); % Position chaque heatmap dans la grille des subplots
+    colormap('hot'); % Utilise la même colormap pour tous les plots pour la cohérence
 
-    % Handling data for pcolor
-    unique_gamma = unique(gamma);
-    unique_Hext = unique(Hext);
-    [X, Y] = meshgrid(unique_gamma, unique_Hext);
+    [X, Y] = meshgrid(gamma_range, Hext_range); % Utilisation de gammes log-scalées
 
-    % Check the number of elements
-    expectedNumElements = length(unique_Hext) * length(unique_gamma);
+    % Vérification du nombre d'éléments
+    expectedNumElements = numel(gamma_range) * numel(Hext_range);
 
     if numel(vars{k}) == expectedNumElements
-        Z = reshape(vars{k}, length(unique_Hext), length(unique_gamma));
+        Z = reshape(vars{k}, numel(Hext_range), numel(gamma_range));
         pcolor(X, Y, Z);
-        shading interp; % This makes the heatmap look continuous
+        shading interp; % Cela rend le heatmap continu
         colorbar;
         xlabel('{\gamma} (1/min)');
         ylabel('H_{ext} (mM)');
         title(titles{k});
-        set(gca, 'ColorScale', 'log'); % Set color axis to logarithmic if needed
+
+        % Configuration des axes en échelle log
+        set(gca, 'XScale', 'log', 'YScale', 'log');
+        set(gca, 'ColorScale', 'log'); % Mettez l'axe des couleurs en échelle logarithmique si nécessaire
     else
         error('The number of elements in vars{%d} does not match expected dimensions.', k);
     end
 end
+
+
+% for k = 1:numVars
+%     subplot(numRows, numCols, k); % Position each heatmap in the subplot grid
+%     set(gca, 'XScale', 'log', 'YScale', 'log'); % Log-log scale
+%     colormap('hot'); % Use the same colormap for all plots for consistency
+% 
+%     % Handling data for pcolor
+%     unique_gamma = unique(gamma);
+%     unique_Hext = unique(Hext);
+%     [X, Y] = meshgrid(unique_gamma, unique_Hext);
+% 
+%     % Check the number of elements
+%     expectedNumElements = length(unique_Hext) * length(unique_gamma);
+% 
+%     if numel(vars{k}) == expectedNumElements
+%         Z = reshape(vars{k}, length(unique_Hext), length(unique_gamma));
+%         pcolor(X, Y, Z);
+%         shading interp; % This makes the heatmap look continuous
+%         colorbar;
+%         xlabel('{\gamma} (1/min)');
+%         ylabel('H_{ext} (mM)');
+%         title(titles{k});
+%         set(gca, 'ColorScale', 'log'); % Set color axis to logarithmic if needed
+%     else
+%         error('The number of elements in vars{%d} does not match expected dimensions.', k);
+%     end
+% end
 
 % Optionally, adjust subplot margins
 set(gcf, 'Position', [100, 100, 1400, 900]); % Resize the figure to fit all subplots
